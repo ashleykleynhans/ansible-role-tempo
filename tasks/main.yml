@@ -15,6 +15,12 @@
     __tempo_version: "{{ __tempo_version_out.stdout_lines[0].split(' ')[2] | replace('v', '') }}"
   when: __tempo_stat.stat.exists
 
+- name: Empty tempo version if not installed
+  ansible.builtin.set_fact:
+    __tempo_version: ""
+  when:
+    - __tempo_version is not defined
+
 - block:
     - name: Download Tempo Debian package
       ansible.builtin.get_url:
