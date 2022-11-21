@@ -1,20 +1,40 @@
 ---
-- name: Download Tempo Debian package
-  ansible.builtin.get_url:
-    url: "https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/tempo_{{ tempo_version }}_linux_amd64.deb"
-    dest: "/tmp/tempo_{{ tempo_version }}.deb"
-    checksum: "sha256:https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/SHA256SUMS"
-    mode: '0644'
-  register: _download_release
-  until: _download_release is succeeded
-  retries: 5
-  delay: 2
+- name: Is it installed?
+  ansible.builtin.stat:
+    path: /usr/bin/tempo
+  register: __tempo_stat
 
-- name: Install Tempo Debian package
-  ansible.builtin.apt:
-    deb: "/tmp/tempo_{{ tempo_version }}.deb"
+- name: Get version
+  ansible.builtin.command: /usr/bin/tempo -version
+  changed_when: false
+  register: __tempo_version_out
+  when: __tempo_stat.stat.exists
 
-- name: Clean-up
-  ansible.builtin.file:
-    path: "/tmp/tempo_{{ tempo_version }}.deb"
-    state: absent
+- name: Set version
+  set_fact:
+    __tempo_version: "{{ __tempo_version_out.stdout_lines[0].split(' ')[2] | replace('v', '') }}"
+  when: __tempo_stat.stat.exists
+
+- ansible.builtin.block:
+    - name: Download Tempo Debian package
+      ansible.builtin.get_url:
+        url: "https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/tempo_{{ tempo_version }}_linux_amd64.deb"
+        dest: "/tmp/tempo_{{ tempo_version }}.deb"
+        checksum: "sha256:https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/SHA256SUMS"
+        mode: '0644'
+      register: _download_release
+      until: _download_release is succeeded
+      retries: 5
+      delay: 2
+
+    - name: Install Tempo Debian package
+      ansible.builtin.apt:
+        deb: "/tmp/tempo_{{ tempo_version }}.deb"
+
+    - name: Clean-up
+      ansible.builtin.file:
+        path: "/tmp/tempo_{{ tempo_version }}.deb"
+        state: absent
+  check_mode: false
+  when:
+    - __tempo_version != tempo_version
