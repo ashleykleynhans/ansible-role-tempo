@@ -13,3 +13,8 @@
 - name: Install Tempo Debian package
   ansible.builtin.apt:
     deb: "/tmp/tempo_{{ tempo_version }}.deb"
+
+- name: Clean-up
+  ansible.builtin.file:
+    path: "/tmp/tempo_{{ tempo_version }}.deb"
+    state: absent
