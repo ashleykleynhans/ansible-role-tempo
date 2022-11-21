@@ -11,11 +11,11 @@
   when: __tempo_stat.stat.exists
 
 - name: Set version
-  set_fact:
+  ansible.builtin.set_fact:
     __tempo_version: "{{ __tempo_version_out.stdout_lines[0].split(' ')[2] | replace('v', '') }}"
   when: __tempo_stat.stat.exists
 
-- ansible.builtin.block:
+- block:
     - name: Download Tempo Debian package
       ansible.builtin.get_url:
         url: "https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/tempo_{{ tempo_version }}_linux_amd64.deb"
