@@ -10,6 +10,6 @@
   retries: 5
   delay: 2
 
-- name: Install Tempo Debian package:
+- name: Install Tempo Debian package
   ansible.builtin.apt:
     deb: "/tmp/tempo_{{ tempo_version }}.deb"
