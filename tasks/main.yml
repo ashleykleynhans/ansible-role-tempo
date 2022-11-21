@@ -1,1 +1,15 @@
 ---
+- name: Download Tempo Debian package
+  ansible_builtin.get_url:
+    url: "https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/tempo_{{ tempo_version }}_linux_amd64.deb"
+    dest: "/tmp/tempo_{{ tempo_version }}.deb"
+    checksum: "sha256:https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/SHA256SUMS"
+    mode: '0644'
+  register: _download_release
+  until: _download_release is succeeded
+  retries: 5
+  delay: 2
+
+- name: Install Tempo Debian package:
+  ansible.builtin.apt:
+    deb: "/tmp/tempo_{{ tempo_version }}.deb"
