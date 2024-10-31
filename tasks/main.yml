@@ -1,4 +1,10 @@
 ---
+- name: Get system architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: __system_arch
+  changed_when: false
+  check_mode: false
+
 - name: Is it installed?
   ansible.builtin.stat:
     path: /usr/bin/tempo
@@ -24,7 +30,7 @@
 - block:
     - name: Download Tempo Debian package
       ansible.builtin.get_url:
-        url: "https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/tempo_{{ tempo_version }}_linux_amd64.deb"
+        url: "https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/tempo_{{ tempo_version }}_linux_{{ __system_arch.stdout }}.deb"
         dest: "/tmp/tempo_{{ tempo_version }}.deb"
         checksum: "sha256:https://github.com/grafana/tempo/releases/download/v{{ tempo_version }}/SHA256SUMS"
         mode: '0644'
